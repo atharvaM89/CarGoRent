@@ -1,10 +1,7 @@
 package com.cargorent.controller;
 
-import com.cargorent.dto.PlaceOrderRequest;
-import com.cargorent.entity.Order;
+import com.cargorent.dto.OrderResponseDto;
 import com.cargorent.service.OrderService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,9 +14,8 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping
-    public ResponseEntity<Order> placeOrder(@RequestBody PlaceOrderRequest request) {
-        Order order = orderService.placeOrder(request);
-        return new ResponseEntity<>(order, HttpStatus.CREATED);
+    @GetMapping("/{orderId}")
+    public OrderResponseDto getOrder(@PathVariable Long orderId) {
+        return orderService.getOrderById(orderId);
     }
 }

@@ -1,6 +1,8 @@
 package com.cargorent.service.impl;
 
 import com.cargorent.dto.OrderItemRequest;
+import com.cargorent.dto.OrderItemResponseDto;
+import com.cargorent.dto.OrderResponseDto;
 import com.cargorent.dto.PlaceOrderRequest;
 import com.cargorent.entity.*;
 import com.cargorent.repository.*;
@@ -80,5 +82,29 @@ public class OrderServiceImpl implements OrderService {
         savedOrder.setOrderItems(orderItems);
 
         return orderRepository.save(savedOrder);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderById(Long orderId) {
+
+        Order order = orderRepository.findOrderWithDetails(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        return new OrderResponseDto(
+                order.getId(),
+                order.getTotalAmount(),
+                order.getStatus().name(),
+                order.getCreatedAt(),
+                order.getCustomer().getId(),
+                order.getCompany().getId(),
+                order.getOrderItems().stream()
+                        .map(item -> new OrderItemResponseDto(
+                                item.getCar().getId(),
+                                item.getCar().getModel(),
+                                item.getNumberOfDays(),
+                                item.getPrice()
+                        ))
+                        .toList()
+        );
     }
 }
