@@ -20,26 +20,27 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // PLACE ORDER
     @PostMapping
     public ResponseEntity<Order> placeOrder(@RequestBody PlaceOrderRequest request) {
         Order order = orderService.placeOrder(request);
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
-    // GET ORDER DETAILS
     @GetMapping("/{orderId}")
     public OrderResponseDto getOrder(@PathVariable Long orderId) {
         return orderService.getOrderById(orderId);
     }
 
-    // ORDER HISTORY
     @GetMapping("/customer/{customerId}")
     public List<OrderResponseDto> getOrdersByCustomer(@PathVariable Long customerId) {
         return orderService.getOrdersByCustomer(customerId);
     }
 
-    // CANCEL ORDER (CUSTOMER)
+    @GetMapping("/company/{companyId}")
+    public List<OrderResponseDto> getOrdersByCompany(@PathVariable Long companyId) {
+        return orderService.getOrdersByCompany(companyId);
+    }
+
     @PutMapping("/{orderId}/cancel")
     public OrderResponseDto cancelOrder(
             @PathVariable Long orderId,
@@ -48,7 +49,6 @@ public class OrderController {
         return orderService.cancelOrder(orderId, customerId);
     }
 
-    // UPDATE ORDER STATUS (COMPANY)
     @PutMapping("/{orderId}/status")
     public OrderResponseDto updateOrderStatus(
             @PathVariable Long orderId,

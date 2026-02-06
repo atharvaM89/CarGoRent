@@ -11,6 +11,24 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("""
         select distinct o from Order o
+        join fetch o.customer
+        join fetch o.company
+        where o.customer.id = :customerId
+        order by o.createdAt desc
+    """)
+    List<Order> findOrdersByCustomer(Long customerId);
+
+    @Query("""
+        select distinct o from Order o
+        join fetch o.customer
+        join fetch o.company
+        where o.company.id = :companyId
+        order by o.createdAt desc
+    """)
+    List<Order> findOrdersByCompany(Long companyId);
+
+    @Query("""
+        select distinct o from Order o
         join fetch o.orderItems oi
         join fetch oi.car
         join fetch o.customer
@@ -18,11 +36,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         where o.id = :orderId
     """)
     Optional<Order> findOrderWithDetails(Long orderId);
-
-    @Query("""
-        select o from Order o
-        where o.customer.id = :customerId
-        order by o.createdAt desc
-    """)
-    List<Order> findOrdersByCustomer(Long customerId);
 }

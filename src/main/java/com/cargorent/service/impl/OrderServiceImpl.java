@@ -105,7 +105,26 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
-    // ================= CANCEL ORDER (CUSTOMER) =================
+    // ================= COMPANY DASHBOARD =================
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getOrdersByCompany(Long companyId) {
+
+        return orderRepository.findOrdersByCompany(companyId)
+                .stream()
+                .map(order -> new OrderResponseDto(
+                        order.getId(),
+                        order.getTotalAmount(),
+                        order.getStatus().name(),
+                        order.getCreatedAt(),
+                        order.getCustomer().getId(),
+                        order.getCompany().getId(),
+                        List.of()
+                ))
+                .toList();
+    }
+
+    // ================= CANCEL ORDER =================
     @Override
     @Transactional
     public OrderResponseDto cancelOrder(Long orderId, Long customerId) {
@@ -123,7 +142,6 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
 
-        // Restore car availability
         order.getOrderItems().forEach(item -> {
             Car car = item.getCar();
             car.setAvailability(true);
@@ -143,7 +161,7 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-    // ================= UPDATE ORDER STATUS (COMPANY) =================
+    // ================= UPDATE ORDER STATUS =================
     @Override
     @Transactional
     public OrderResponseDto updateOrderStatus(Long orderId, String status) {
