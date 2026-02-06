@@ -107,4 +107,21 @@ public class OrderServiceImpl implements OrderService {
                         .toList()
         );
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getOrdersByCustomer(Long customerId) {
+
+        return orderRepository.findOrdersByCustomer(customerId)
+                .stream()
+                .map(order -> new OrderResponseDto(
+                        order.getId(),
+                        order.getTotalAmount(),
+                        order.getStatus().name(),
+                        order.getCreatedAt(),
+                        order.getCustomer().getId(),
+                        order.getCompany().getId(),
+                        List.of() // items not needed for list view
+                ))
+                .toList();
+    }
 }

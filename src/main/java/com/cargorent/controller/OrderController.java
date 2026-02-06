@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -29,5 +31,9 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public OrderResponseDto getOrder(@PathVariable Long orderId) {
         return orderService.getOrderById(orderId);
+    }
+    @GetMapping("/customer/{customerId}")
+    public List<OrderResponseDto> getOrdersByCustomer(@PathVariable Long customerId) {
+        return orderService.getOrdersByCustomer(customerId);
     }
 }
