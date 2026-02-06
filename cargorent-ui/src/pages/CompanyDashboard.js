@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function CompanyDashboard() {
   const [orders, setOrders] = useState([]);
+  const navigate = useNavigate();
   const companyId = 1; // TEMP (JWT will replace)
 
   useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchOrders = async () => {
@@ -44,10 +47,15 @@ function CompanyDashboard() {
             marginBottom: "12px",
           }}
         >
-          <p><strong>Order ID:</strong> {order.orderId}</p>
-          <p><strong>Customer ID:</strong> {order.customerId}</p>
-          <p><strong>Total:</strong> ₹{order.totalAmount}</p>
-          <p><strong>Status:</strong> {order.status}</p>
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate(`/orders/${order.orderId}`)}
+          >
+            <p><strong>Order ID:</strong> {order.orderId}</p>
+            <p><strong>Customer ID:</strong> {order.customerId}</p>
+            <p><strong>Total:</strong> ₹{order.totalAmount}</p>
+            <p><strong>Status:</strong> {order.status}</p>
+          </div>
 
           {order.status === "PLACED" && (
             <button onClick={() => updateStatus(order.orderId, "CONFIRMED")}>

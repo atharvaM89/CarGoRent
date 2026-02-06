@@ -7,6 +7,7 @@ import CarList from "./pages/CarList";
 import PlaceOrder from "./pages/PlaceOrder";
 import OrderHistory from "./pages/OrderHistory";
 import CompanyDashboard from "./pages/CompanyDashboard";
+import OrderDetails from "./pages/OrderDetails";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/cars/:companyId" element={<CarList />} />
         <Route path="/order" element={<PlaceOrder />} />
         <Route path="/orders" element={<OrderHistory />} />
+        <Route path="/orders/:orderId" element={<OrderDetails />} />
         <Route path="/company-dashboard" element={<CompanyDashboard />} />
       </Routes>
     </Router>
