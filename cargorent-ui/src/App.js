@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import UserRegister from "./pages/UserRegister";
 import CompanyList from "./pages/CompanyList";
@@ -16,8 +17,10 @@ function App() {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={<UserRegister />} />
-        <Route path="/login" element={<Login />} />   {/* ✅ FIX */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<UserRegister />} />
+
         <Route path="/companies" element={<CompanyList />} />
         <Route path="/cars/:companyId" element={<CarList />} />
         <Route path="/order" element={<PlaceOrder />} />

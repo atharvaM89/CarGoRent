@@ -1,82 +1,92 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function UserRegister() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "CUSTOMER",
-  });
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const queryParams = new URLSearchParams(location.search);
+  const roleFromUrl = queryParams.get("role");
 
-  const handleSubmit = async (e) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    if (!roleFromUrl) {
+      alert("Invalid access to registration page");
+      navigate("/");
+      return;
+    }
+    setRole(roleFromUrl);
+  }, [roleFromUrl, navigate]);
+
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     try {
-      await api.post("/users/register", formData);
-      alert("User registered successfully");
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        role: "CUSTOMER",
+      await api.post("/users/register", {
+        name,
+        email,
+        password,
+        role,
       });
+
+      alert("Registration successful. Please login.");
+      navigate("/login");
     } catch (error) {
-      alert("Registration failed");
       console.error(error);
+      alert("Registration failed");
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "40px auto" }}>
-      <h2>User Registration</h2>
+    <div style={{ maxWidth: "400px", margin: "60px auto" }}>
+      <h2>
+        Register as {role === "COMPANY" ? "Company" : "User"}
+      </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleRegister}>
         <input
-          name="name"
+          type="text"
           placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
+          style={{ width: "100%", marginBottom: "12px", padding: "8px" }}
         />
-        <br /><br />
 
         <input
-          name="email"
           type="email"
           placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
+          style={{ width: "100%", marginBottom: "12px", padding: "8px" }}
         />
-        <br /><br />
 
         <input
-          name="password"
           type="password"
           placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
+          style={{ width: "100%", marginBottom: "12px", padding: "8px" }}
         />
-        <br /><br />
 
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-        >
-          <option value="CUSTOMER">Customer</option>
-          <option value="COMPANY">Company</option>
-        </select>
-        <br /><br />
+        <input
+          type="text"
+          value={role}
+          disabled
+          style={{
+            width: "100%",
+            marginBottom: "12px",
+            padding: "8px",
+            backgroundColor: "#f0f0f0",
+          }}
+        />
 
         <button type="submit">Register</button>
       </form>
