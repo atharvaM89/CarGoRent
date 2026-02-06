@@ -5,20 +5,18 @@ import api from "../services/api";
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
-  const customerId = 1; // TEMP (JWT will replace)
 
   useEffect(() => {
     fetchOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchOrders = async () => {
     try {
-      const response = await api.get(`/orders/customer/${customerId}`);
+      const response = await api.get("/orders/my");
       setOrders(response.data);
     } catch (error) {
       console.error(error);
-      alert("Failed to load order history");
+      alert("Failed to load your orders");
     }
   };
 

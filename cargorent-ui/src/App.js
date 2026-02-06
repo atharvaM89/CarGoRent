@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 
+import Login from "./pages/Login";
 import UserRegister from "./pages/UserRegister";
 import CompanyList from "./pages/CompanyList";
 import CarList from "./pages/CarList";
@@ -16,6 +17,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<UserRegister />} />
+        <Route path="/login" element={<Login />} />   {/* ✅ FIX */}
         <Route path="/companies" element={<CompanyList />} />
         <Route path="/cars/:companyId" element={<CarList />} />
         <Route path="/order" element={<PlaceOrder />} />
