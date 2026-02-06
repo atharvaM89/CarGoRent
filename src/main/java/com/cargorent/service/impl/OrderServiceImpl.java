@@ -105,6 +105,86 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
+    // ================= CANCEL ORDER (CUSTOMER) =================
+    @Override
+    @Transactional
+    public OrderResponseDto cancelOrder(Long orderId, Long customerId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getCustomer().getId().equals(customerId)) {
+            throw new BadRequestException("You can cancel only your own orders");
+        }
+
+        if (order.getStatus() != OrderStatus.PLACED) {
+            throw new BadRequestException("Order cannot be cancelled at this stage");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+        // Restore car availability
+        order.getOrderItems().forEach(item -> {
+            Car car = item.getCar();
+            car.setAvailability(true);
+            carRepository.save(car);
+        });
+
+        orderRepository.save(order);
+
+        return new OrderResponseDto(
+                order.getId(),
+                order.getTotalAmount(),
+                order.getStatus().name(),
+                order.getCreatedAt(),
+                order.getCustomer().getId(),
+                order.getCompany().getId(),
+                List.of()
+        );
+    }
+
+    // ================= UPDATE ORDER STATUS (COMPANY) =================
+    @Override
+    @Transactional
+    public OrderResponseDto updateOrderStatus(Long orderId, String status) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        OrderStatus newStatus;
+
+        try {
+            newStatus = OrderStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid order status");
+        }
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Cancelled order cannot be updated");
+        }
+
+        if (order.getStatus() == OrderStatus.PLACED && newStatus != OrderStatus.CONFIRMED) {
+            throw new BadRequestException("Order must be CONFIRMED first");
+        }
+
+        if (order.getStatus() == OrderStatus.CONFIRMED && newStatus != OrderStatus.COMPLETED) {
+            throw new BadRequestException("Order must be COMPLETED after confirmation");
+        }
+
+        order.setStatus(newStatus);
+        orderRepository.save(order);
+
+        return new OrderResponseDto(
+                order.getId(),
+                order.getTotalAmount(),
+                order.getStatus().name(),
+                order.getCreatedAt(),
+                order.getCustomer().getId(),
+                order.getCompany().getId(),
+                List.of()
+        );
+    }
+
     // ================= ORDER DETAILS =================
     @Override
     @Transactional(readOnly = true)

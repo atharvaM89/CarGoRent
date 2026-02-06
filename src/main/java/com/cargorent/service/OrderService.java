@@ -13,4 +13,8 @@ public interface OrderService {
     OrderResponseDto getOrderById(Long orderId);
 
     List<OrderResponseDto> getOrdersByCustomer(Long customerId);
+
+    OrderResponseDto cancelOrder(Long orderId, Long customerId);
+
+    OrderResponseDto updateOrderStatus(Long orderId, String status);
 }
