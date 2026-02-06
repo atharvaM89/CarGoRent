@@ -3,9 +3,11 @@ package com.cargorent.controller;
 import com.cargorent.dto.OrderResponseDto;
 import com.cargorent.dto.PlaceOrderRequest;
 import com.cargorent.entity.Order;
+import com.cargorent.security.UserPrincipal;
 import com.cargorent.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,35 +22,48 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    // ================= PLACE ORDER =================
     @PostMapping
     public ResponseEntity<Order> placeOrder(@RequestBody PlaceOrderRequest request) {
         Order order = orderService.placeOrder(request);
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
+    // ================= GET MY ORDERS (JWT BASED) =================
+    @GetMapping("/my")
+    public List<OrderResponseDto> getMyOrders() {
+
+        UserPrincipal principal =
+                (UserPrincipal) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal();
+
+        Long userId = principal.getUserId();
+
+        return orderService.getOrdersByCustomer(userId);
+    }
+
+    // ================= ORDER DETAILS =================
     @GetMapping("/{orderId}")
     public OrderResponseDto getOrder(@PathVariable Long orderId) {
         return orderService.getOrderById(orderId);
     }
 
-    @GetMapping("/customer/{customerId}")
-    public List<OrderResponseDto> getOrdersByCustomer(@PathVariable Long customerId) {
-        return orderService.getOrdersByCustomer(customerId);
-    }
-
-    @GetMapping("/company/{companyId}")
-    public List<OrderResponseDto> getOrdersByCompany(@PathVariable Long companyId) {
-        return orderService.getOrdersByCompany(companyId);
-    }
-
+    // ================= CANCEL ORDER =================
     @PutMapping("/{orderId}/cancel")
-    public OrderResponseDto cancelOrder(
-            @PathVariable Long orderId,
-            @RequestParam Long customerId
-    ) {
-        return orderService.cancelOrder(orderId, customerId);
+    public OrderResponseDto cancelOrder(@PathVariable Long orderId) {
+
+        UserPrincipal principal =
+                (UserPrincipal) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal();
+
+        Long userId = principal.getUserId();
+
+        return orderService.cancelOrder(orderId, userId);
     }
 
+    // ================= UPDATE STATUS (COMPANY) =================
     @PutMapping("/{orderId}/status")
     public OrderResponseDto updateOrderStatus(
             @PathVariable Long orderId,
