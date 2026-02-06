@@ -1,10 +1,11 @@
 package com.cargorent.service.impl;
 
 import com.cargorent.dto.OrderItemRequest;
-import com.cargorent.dto.OrderItemResponseDto;
 import com.cargorent.dto.OrderResponseDto;
 import com.cargorent.dto.PlaceOrderRequest;
 import com.cargorent.entity.*;
+import com.cargorent.exception.BadRequestException;
+import com.cargorent.exception.ResourceNotFoundException;
 import com.cargorent.repository.*;
 import com.cargorent.service.OrderService;
 import org.springframework.stereotype.Service;
@@ -36,15 +37,20 @@ public class OrderServiceImpl implements OrderService {
         this.carRepository = carRepository;
     }
 
+    // ================= PLACE ORDER =================
     @Override
     @Transactional
     public Order placeOrder(PlaceOrderRequest request) {
 
         User customer = userRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        if (customer.getRole() != Role.CUSTOMER) {
+            throw new BadRequestException("Only customers can place orders");
+        }
 
         Company company = companyRepository.findById(request.getCompanyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
         Order order = Order.builder()
                 .customer(customer)
@@ -53,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(0.0)
                 .build();
 
-        Order savedOrder = orderRepository.save(order);
+        orderRepository.save(order);
 
         double totalAmount = 0.0;
         List<OrderItem> orderItems = new ArrayList<>();
@@ -61,34 +67,51 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItemRequest itemRequest : request.getItems()) {
 
             Car car = carRepository.findById(itemRequest.getCarId())
-                    .orElseThrow(() -> new RuntimeException("Car not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Car not found"));
+
+            if (!car.getCompany().getId().equals(company.getId())) {
+                throw new BadRequestException("Car does not belong to selected company");
+            }
+
+            if (!car.isAvailability()) {
+                throw new BadRequestException("Car is already booked");
+            }
+
+            if (itemRequest.getNumberOfDays() <= 0) {
+                throw new BadRequestException("Number of days must be greater than zero");
+            }
 
             double price = car.getPricePerDay() * itemRequest.getNumberOfDays();
             totalAmount += price;
 
             OrderItem orderItem = OrderItem.builder()
-                    .order(savedOrder)
+                    .order(order)
                     .car(car)
                     .numberOfDays(itemRequest.getNumberOfDays())
                     .price(price)
                     .build();
 
             orderItems.add(orderItem);
+
+            car.setAvailability(false);
+            carRepository.save(car);
         }
 
         orderItemRepository.saveAll(orderItems);
 
-        savedOrder.setTotalAmount(totalAmount);
-        savedOrder.setOrderItems(orderItems);
+        order.setTotalAmount(totalAmount);
+        order.setOrderItems(orderItems);
 
-        return orderRepository.save(savedOrder);
+        return orderRepository.save(order);
     }
+
+    // ================= ORDER DETAILS =================
     @Override
     @Transactional(readOnly = true)
     public OrderResponseDto getOrderById(Long orderId) {
 
         Order order = orderRepository.findOrderWithDetails(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         return new OrderResponseDto(
                 order.getId(),
@@ -98,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
                 order.getCustomer().getId(),
                 order.getCompany().getId(),
                 order.getOrderItems().stream()
-                        .map(item -> new OrderItemResponseDto(
+                        .map(item -> new com.cargorent.dto.OrderItemResponseDto(
                                 item.getCar().getId(),
                                 item.getCar().getModel(),
                                 item.getNumberOfDays(),
@@ -107,6 +130,8 @@ public class OrderServiceImpl implements OrderService {
                         .toList()
         );
     }
+
+    // ================= ORDER HISTORY =================
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponseDto> getOrdersByCustomer(Long customerId) {
@@ -120,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
                         order.getCreatedAt(),
                         order.getCustomer().getId(),
                         order.getCompany().getId(),
-                        List.of() // items not needed for list view
+                        List.of()
                 ))
                 .toList();
     }
