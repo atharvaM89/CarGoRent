@@ -11,4 +11,5 @@ public class OrderItemResponseDto {
     private String carModel;
     private Integer numberOfDays;
     private Double price;
+    private boolean hasRated;
 }

@@ -1,7 +1,9 @@
 package com.cargorent.controller;
 
+import com.cargorent.dto.UserRegisterRequest;
 import com.cargorent.entity.User;
 import com.cargorent.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +21,15 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    public ResponseEntity<User> registerUser(@Valid @RequestBody UserRegisterRequest request) {
+        // Convert DTO to User entity
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .role(com.cargorent.entity.Role.valueOf(request.getRole().toUpperCase()))
+                .build();
+
         User savedUser = userService.registerUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }

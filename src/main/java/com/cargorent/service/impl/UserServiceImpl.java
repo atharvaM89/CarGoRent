@@ -11,15 +11,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.cargorent.repository.CompanyRepository companyRepository;
 
     public UserServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            com.cargorent.repository.CompanyRepository companyRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.companyRepository = companyRepository;
     }
 
     @Override
@@ -33,7 +37,19 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Auto-create Company profile if role is COMPANY
+        if (savedUser.getRole() == com.cargorent.entity.Role.COMPANY) {
+            com.cargorent.entity.Company company = new com.cargorent.entity.Company();
+            company.setCompanyName(savedUser.getName());
+            company.setUser(savedUser);
+            company.setActive(false); // Inactive by default, requires Admin approval
+            company.setAddress("Location not provided");
+            companyRepository.save(company);
+        }
+
+        return savedUser;
     }
 
     @Override

@@ -17,6 +17,7 @@ public class OrderResponseDto {
 
     private Long customerId;
     private Long companyId;
+    private Long ownerId;
 
     private List<OrderItemResponseDto> items;
 }

@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
 public class Company {
 
     @Id
@@ -24,10 +25,17 @@ public class Company {
     private String address;
 
     @Column(nullable = false)
-    private boolean isActive = true;
+    @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonProperty("active")
+    private boolean isActive = false;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     @JsonIgnore
     private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private CompanyType companyType = CompanyType.NORMAL;
 }

@@ -8,13 +8,15 @@ import java.util.List;
 
 public interface OrderService {
 
-    Order placeOrder(PlaceOrderRequest request);
+    Order placeOrder(PlaceOrderRequest request, Long customerId);
 
     OrderResponseDto getOrderById(Long orderId);
 
     List<OrderResponseDto> getOrdersByCustomer(Long customerId);
 
     List<OrderResponseDto> getOrdersByCompany(Long companyId);
+
+    List<OrderResponseDto> getOrdersByCompanyUser(Long userId);
 
     OrderResponseDto cancelOrder(Long orderId, Long customerId);
 

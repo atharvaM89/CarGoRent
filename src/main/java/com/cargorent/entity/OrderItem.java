@@ -24,6 +24,12 @@ public class OrderItem {
     @JoinColumn(name = "car_id", nullable = false)
     private Car car;
 
+    @Column(name = "start_date", nullable = false)
+    private java.time.LocalDate startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private java.time.LocalDate endDate;
+
     @Column(nullable = false)
     private Integer numberOfDays;
 
