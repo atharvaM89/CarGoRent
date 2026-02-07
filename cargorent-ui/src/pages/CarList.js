@@ -91,11 +91,15 @@ function CarList() {
           {cars.map((car) => (
             <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
               <div className="h-48 bg-slate-100 flex items-center justify-center overflow-hidden">
-                {car.imageUrl ? (
-                  <img src={car.imageUrl} alt={`${car.brand} ${car.model}`} className="w-full h-full object-cover" />
-                ) : (
-                  <Car className="h-20 w-20 text-slate-300" />
-                )}
+                <img
+                  src={car.url || car.imageUrl || "https://placehold.co/600x400?text=No+Image"}
+                  alt={`${car.brand} ${car.model}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://placehold.co/600x400?text=No+Image";
+                  }}
+                />
               </div>
               <CardHeader className="pb-2">
                 <CardTitle className="flex justify-between items-start">

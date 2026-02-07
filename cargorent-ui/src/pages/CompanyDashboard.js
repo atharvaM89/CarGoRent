@@ -121,14 +121,15 @@ function CompanyDashboard() {
     }
   };
 
-  const handleDeleteCar = async (carId) => {
-    if (!window.confirm("Are you sure?")) return;
+  const handleDeleteCar = async (e, carId) => {
+    e?.stopPropagation?.();
+    if (!window.confirm("Are you sure you want to remove this car from your fleet?")) return;
     try {
       await api.delete(`/company/cars/${carId}`);
-      fetchData();
+      setCars((prev) => prev.filter((c) => c.id !== carId));
     } catch (err) {
       console.error("Failed to delete", err);
-      alert(err.response?.data?.message || "Failed to delete car");
+      alert(err.response?.data?.message || "Failed to remove car");
     }
   };
 
@@ -246,7 +247,8 @@ function CompanyDashboard() {
                   </div>
                   <div className="mt-4 flex gap-2">
                     <button
-                      onClick={() => handleDeleteCar(car.id)}
+                      type="button"
+                      onClick={(e) => handleDeleteCar(e, car.id)}
                       className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
                     >
                       <Trash2 className="h-4 w-4" /> {t("common.delete")}

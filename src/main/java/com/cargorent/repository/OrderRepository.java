@@ -12,7 +12,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("""
         select distinct o from Order o
         join fetch o.customer
-        join fetch o.company
+        left join fetch o.company
+        left join fetch o.owner
         where o.customer.id = :customerId
         order by o.createdAt desc
     """)
