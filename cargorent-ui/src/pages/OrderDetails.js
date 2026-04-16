@@ -115,6 +115,8 @@ function OrderDetails() {
     }
   };
 
+
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <Button variant="ghost" onClick={() => navigate('/orders')} className="mb-6 pl-0 hover:bg-transparent hover:text-primary">
@@ -128,8 +130,8 @@ function OrderDetails() {
             <h1 className="text-2xl font-bold text-slate-900">#{order.id}</h1>
           </div>
           <div className="text-right">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === 'COMPLETED' || order.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' :
+              order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
               }`}>
               {order.status}
             </span>
@@ -166,8 +168,8 @@ function OrderDetails() {
                     </div>
                   </div>
 
-                  {/* Rating Section */}
-                  {order.status === 'COMPLETED' && !item.hasRated && (
+                  {/* Rating Section - Only for Completed/Confirmed */}
+                  {(order.status === 'COMPLETED' || order.status === 'CONFIRMED') && !item.hasRated && (
                     <div className="mt-4 pt-4 border-t border-slate-200">
                       {ratingCarId === item.carId ? (
                         <div className="bg-white p-4 rounded border shadow-sm">
@@ -230,7 +232,9 @@ function OrderDetails() {
           <Button variant="outline" onClick={() => window.print()}>
             {t("common.printReceipt")}
           </Button>
-          {(order.status === 'PLACED' || order.status === 'CONFIRMED' || order.status === 'COMPLETED') && (
+
+          {/* Invoice / Download for Paid Orders */}
+          {(order.status === 'CONFIRMED' || order.status === 'COMPLETED') && (
             <>
               <Button variant="outline" onClick={printInvoice}>
                 {t("common.printPdf")}
